@@ -1,0 +1,38 @@
+# Source files
+src/
+test/
+
+# Development files
+.eslintrc.json
+eslint.config.mjs
+vitest.config.ts
+tsconfig.json
+tsconfig.tsbuildinfo
+.editorconfig
+
+# Documentation
+PORTING_PROGRESS.md
+
+# Demo and temporary files
+demo/
+tmp/
+
+# Log files
+*.log
+npm-debug.log*
+
+# IDE files
+.vscode/
+.idea/
+
+# Mac files
+.DS_Store
+
+# CI files
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Development dependencies config
+.prettierrc
+.prettierignore
