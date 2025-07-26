@@ -380,19 +380,7 @@ describe('HookManager', () => {
       writeFileSync(join(tempDir, '.worktree.yml'), stringify({
         hooks: {
           post_add: {
-            command: `node -e "
-              const fs = require('fs');
-              const content = [
-                'MAIN=' + process.env.WORKTREE_MAIN,
-                'ROOT=' + process.env.WORKTREE_MANAGER_ROOT,
-                'PATH=' + process.env.WORKTREE_PATH,
-                'ABSOLUTE=' + process.env.WORKTREE_ABSOLUTE_PATH,
-                'BRANCH=' + process.env.WORKTREE_BRANCH,
-                'FORCE=' + process.env.WORKTREE_FORCE,
-                'SUCCESS=' + process.env.WORKTREE_SUCCESS
-              ].join('\\n');
-              fs.writeFileSync('${outputFile}', content);
-            "`,
+            command: `node -e "const fs=require('fs');const content=['MAIN='+process.env.WORKTREE_MAIN,'ROOT='+process.env.WORKTREE_MANAGER_ROOT,'PATH='+process.env.WORKTREE_PATH,'ABSOLUTE='+process.env.WORKTREE_ABSOLUTE_PATH,'BRANCH='+process.env.WORKTREE_BRANCH,'FORCE='+process.env.WORKTREE_FORCE,'SUCCESS='+process.env.WORKTREE_SUCCESS].join('\\n');fs.writeFileSync('env_vars.txt',content);"`,
             pwd: tempDir
           }
         }
