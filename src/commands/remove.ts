@@ -7,6 +7,7 @@ import { ConfigManager } from '../core/config/config-manager.js'
 import { Manager } from '../core/git/manager.js'
 import { HookManager } from '../core/hooks/hook-manager.js'
 import { Worktree } from '../models/worktree.js'
+import { formatPathForDisplay } from '../utils/paths.js'
 
 export default class Remove extends Command {
   static override args = {
@@ -103,7 +104,7 @@ static override summary = 'Remove an existing worktree'
       targetWorktree = worktrees.find(wt => resolve(wt.path) === normalizedPath)
 
       if (!targetWorktree) {
-        this.error(`Worktree not found at path: ${path}`)
+        this.error(`Worktree not found at path: ${formatPathForDisplay(path)}`)
       }
     }
 
@@ -125,7 +126,7 @@ static override summary = 'Remove an existing worktree'
       // Remove worktree
       await manager.remove(path, { force: flags.force })
 
-      this.log(`Removed: ${targetWorktree.path}`)
+      this.log(`Removed: ${formatPathForDisplay(targetWorktree.path)}`)
 
       // Execute post-remove hook
       if (!flags['no-hooks']) {
@@ -153,7 +154,7 @@ static override summary = 'Remove an existing worktree'
           try {
             // Retry with force option
             await manager.remove(path, { force: true })
-            this.log(`Removed: ${targetWorktree.path}`)
+            this.log(`Removed: ${formatPathForDisplay(targetWorktree.path)}`)
 
             // Execute post-remove hook with success
             if (!flags['no-hooks']) {
@@ -292,7 +293,7 @@ static override summary = 'Remove an existing worktree'
 
     // Sequential execution is required for removing worktrees
     for (const worktree of removableWorktrees) {
-      this.log(`\nRemoving worktree: ${worktree.path}`)
+      this.log(`\nRemoving worktree: ${formatPathForDisplay(worktree.path)}`)
 
       // Execute pre-remove hook
       const context = {
@@ -316,7 +317,7 @@ static override summary = 'Remove an existing worktree'
         // eslint-disable-next-line no-await-in-loop
         await manager.remove(worktree.path, { force: flags.force })
 
-        this.log(`  Worktree removed: ${worktree.path}`)
+        this.log(`  Worktree removed: ${formatPathForDisplay(worktree.path)}`)
         removedCount++
 
         // Execute post-remove hook
@@ -361,7 +362,7 @@ static override summary = 'Remove an existing worktree'
     if (forceRemovableWorktrees.length > 0 && !flags.force && this.isInteractiveModeAvailable()) {
       this.log('\nThe following worktrees contain uncommitted changes:')
       for (const worktree of forceRemovableWorktrees) {
-        this.log(`  - ${worktree.path} (${worktree.branch || 'detached'})`)
+        this.log(`  - ${formatPathForDisplay(worktree.path)} (${worktree.branch || 'detached'})`)
       }
 
       const shouldForce = await confirm({
@@ -374,14 +375,14 @@ static override summary = 'Remove an existing worktree'
 
         // Sequential execution is required for force removing worktrees
         for (const worktree of forceRemovableWorktrees) {
-          this.log(`\nRemoving worktree: ${worktree.path}`)
+          this.log(`\nRemoving worktree: ${formatPathForDisplay(worktree.path)}`)
 
           try {
             // Remove with force
             // eslint-disable-next-line no-await-in-loop
             await manager.remove(worktree.path, { force: true })
 
-            this.log(`  Worktree removed: ${worktree.path}`)
+            this.log(`  Worktree removed: ${formatPathForDisplay(worktree.path)}`)
             removedCount++
             failedCount--
 

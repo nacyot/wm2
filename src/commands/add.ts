@@ -6,6 +6,7 @@ import { dirname, join, resolve } from 'node:path'
 import { ConfigManager } from '../core/config/config-manager.js'
 import { Manager } from '../core/git/manager.js'
 import { HookManager } from '../core/hooks/hook-manager.js'
+import { formatPathForDisplay } from '../utils/paths.js'
 
 export default class Add extends Command {
   // Intentionally ordered: nameOrPath must come before branch for correct CLI argument parsing
@@ -136,8 +137,8 @@ static override summary = 'Create a new worktree'
         result = await manager.add(path, undefined, { force: flags.force })
       }
 
-      this.log(`Created: ${result.path} [${result.branch || 'detached'}]`)
-      this.log(`Run: cd ${result.path}`)
+      this.log(`Created: ${formatPathForDisplay(result.path)} [${result.branch || 'detached'}]`)
+      this.log(`Run: cd ${formatPathForDisplay(result.path)}`)
 
       // Execute post-add hook
       if (!flags['no-hooks']) {

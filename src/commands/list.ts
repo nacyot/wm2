@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 
 import { Manager } from '../core/git/manager.js'
+import { formatPathForDisplay } from '../utils/paths.js'
 
 export default class List extends Command {
   static override description = `
@@ -25,7 +26,7 @@ static override summary = 'List all worktrees'
     // Show main repository path if running from a worktree
     const isMain = await this.isMainRepository()
     if (!isMain) {
-      this.log(`Main: ${mainRepoPath}`)
+      this.log(`Main: ${formatPathForDisplay(mainRepoPath)}`)
       this.log('')
     }
 
