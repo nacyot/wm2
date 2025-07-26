@@ -1,7 +1,7 @@
 {
   "name": "wm2",
   "description": "Git worktree management with hooks - ideal for coding agents like Claude Code",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "author": "nacyot <propellerheaven@gmail.com>",
   "bin": {
     "wm2": "./bin/run.js"

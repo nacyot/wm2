@@ -5,7 +5,6 @@
 /dist
 /tmp
 /node_modules
-oclif.manifest.json
 /.notes
 /.vscode
 .worktree.yml
