@@ -87,7 +87,7 @@ export async function runWm2Command(args: string[], options: { cwd?: string } = 
   stdout: string
 }> {
   try {
-    const result = await execa('node', [join(process.cwd(), 'bin/dev.js'), ...args], {
+    const result = await execa('node', [join(process.cwd(), 'bin/run.js'), ...args], {
       cwd: options.cwd || process.cwd(),
       reject: false,
     })
