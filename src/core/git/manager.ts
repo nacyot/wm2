@@ -20,6 +20,9 @@ export class Manager {
   }
 
   async add(path: string, branch?: string, options: { force?: boolean } = {}): Promise<Worktree> {
+    this.validateInput(path, 'path')
+    if (branch) this.validateInput(branch, 'branch')
+    
     const args = ['worktree', 'add']
     if (options.force) args.push('--force')
     args.push(path)
@@ -39,6 +42,9 @@ export class Manager {
     remoteBranch: string,
     options: { force?: boolean } = {},
   ): Promise<Worktree> {
+    this.validateInput(path, 'path')
+    this.validateInput(localBranch, 'branch')
+    
     // Parse remote and branch name
     const [remote, ...branchParts] = remoteBranch.split('/')
     const branchName = branchParts.join('/')
@@ -64,6 +70,9 @@ export class Manager {
   }
 
   async addWithNewBranch(path: string, branch: string, options: { force?: boolean } = {}): Promise<Worktree> {
+    this.validateInput(path, 'path')
+    this.validateInput(branch, 'branch')
+    
     const args = ['worktree', 'add']
     if (options.force) args.push('--force')
     args.push('-b', branch, path)
@@ -90,6 +99,8 @@ export class Manager {
   }
 
   async remove(path: string, options: { force?: boolean } = {}): Promise<void> {
+    this.validateInput(path, 'path')
+    
     const args = ['worktree', 'remove']
     if (options.force) args.push('--force')
     args.push(path)
@@ -168,6 +179,27 @@ export class Manager {
   private validateGitRepository(): void {
     if (!existsSync(join(this.repositoryPath, '.git'))) {
       throw new GitError(`Not a git repository: ${this.repositoryPath}`)
+    }
+  }
+
+  private validateInput(input: string, type: 'branch' | 'path'): void {
+    // Prevent command injection by checking for dangerous characters
+    const dangerousChars = /[;&|`$<>\\]/
+    if (dangerousChars.test(input)) {
+      throw new GitError(`Invalid ${type}: contains potentially dangerous characters`)
+    }
+    
+    // Additional validation for branch names
+    if (type === 'branch') {
+      // Git branch name restrictions
+      const invalidBranchChars = /[\s~^:?*[\]\\]/
+      if (invalidBranchChars.test(input)) {
+        throw new GitError('Invalid branch name: contains forbidden characters')
+      }
+
+      if (input.startsWith('-')) {
+        throw new GitError('Invalid branch name: cannot start with hyphen')
+      }
     }
   }
 }
