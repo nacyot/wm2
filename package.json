@@ -1,34 +1,26 @@
 {
   "name": "wm2",
-  "description": "Git worktree management tool for easy workspace organization",
-  "version": "0.0.1",
+  "description": "Git worktree management with hooks - ideal for coding agents like Claude Code",
+  "version": "0.2.0",
   "author": "nacyot <propellerheaven@gmail.com>",
   "bin": {
     "wm2": "./bin/run.js"
   },
-  "bugs": "https://github.com/nacyot/worktree_manager/issues",
+  "bugs": "https://github.com/nacyot/wm2/issues",
   "dependencies": {
     "@inquirer/prompts": "^7.7.1",
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
     "execa": "^9.6.0",
-    "inquirer": "^12.8.2",
-    "js-yaml": "^4.1.0",
-    "simple-git": "^3.28.0"
+    "yaml": "^2.8.0"
   },
   "devDependencies": {
     "@eslint/compat": "^1",
     "@oclif/prettier-config": "^0.2.1",
-    "@oclif/test": "^4",
-    "@types/chai": "^4",
-    "@types/js-yaml": "^4.0.9",
-    "@types/mocha": "^10",
     "@types/node": "^18",
-    "chai": "^4",
     "eslint": "^9",
     "eslint-config-oclif": "^6",
     "eslint-config-prettier": "^10",
-    "mocha": "^10",
     "oclif": "^4",
     "shx": "^0.3.3",
     "ts-node": "^10",
@@ -36,7 +28,7 @@
     "vitest": "^3.2.4"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.17.1"
   },
   "files": [
     "./bin",
@@ -44,7 +36,7 @@
     "./.worktree.yml.example",
     "./oclif.manifest.json"
   ],
-  "homepage": "https://github.com/nacyot/worktree_manager",
+  "homepage": "https://github.com/nacyot/wm2",
   "keywords": [
     "git",
     "worktree",
@@ -64,13 +56,13 @@
     ],
     "topicSeparator": " "
   },
-  "repository": "nacyot/worktree_manager",
+  "repository": "nacyot/wm2",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
     "lint": "eslint",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
-    "prepack": "oclif manifest && oclif readme",
+    "prepack": "npm run build && oclif manifest",
     "test": "vitest run",
     "test:watch": "vitest",
     "version": "oclif readme && git add README.md"

@@ -69,9 +69,9 @@ export async function createTestRepositoryWithWorktree(worktreeName: string): Pr
  * Creates a configuration file in the repository
  */
 export async function createConfigFile(repoPath: string, config: Record<string, unknown>): Promise<void> {
-  const yaml = await import('js-yaml')
+  const yaml = await import('yaml')
   const configPath = join(repoPath, '.worktree.yml')
-  const configContent = yaml.dump(config)
+  const configContent = yaml.stringify(config)
   await writeFile(configPath, configContent)
 }
 

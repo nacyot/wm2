@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
-import { dump } from 'js-yaml'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { stringify } from 'yaml'
 
 import { ConfigManager } from '../../../src/core/config/config-manager.js'
 
@@ -28,7 +28,7 @@ describe('ConfigManager', () => {
 
     it('returns the configured value when config file exists', () => {
       const configContent = { worktrees_dir: '../../custom-worktrees' }
-      writeFileSync(join(testDir, '.worktree.yml'), dump(configContent))
+      writeFileSync(join(testDir, '.worktree.yml'), stringify(configContent))
       
       const newConfigManager = new ConfigManager(testDir)
       expect(newConfigManager.worktreesDir).toBe('../../custom-worktrees')
@@ -37,7 +37,7 @@ describe('ConfigManager', () => {
     it('returns the configured value from .git directory', () => {
       mkdirSync(join(testDir, '.git'), { recursive: true })
       const configContent = { worktrees_dir: '../worktrees' }
-      writeFileSync(join(testDir, '.git/.worktree.yml'), dump(configContent))
+      writeFileSync(join(testDir, '.git/.worktree.yml'), stringify(configContent))
       
       const newConfigManager = new ConfigManager(testDir)
       expect(newConfigManager.worktreesDir).toBe('../worktrees')
@@ -47,8 +47,8 @@ describe('ConfigManager', () => {
       mkdirSync(join(testDir, '.git'), { recursive: true })
       const configContent1 = { worktrees_dir: '../priority' }
       const configContent2 = { worktrees_dir: '../secondary' }
-      writeFileSync(join(testDir, '.worktree.yml'), dump(configContent1))
-      writeFileSync(join(testDir, '.git/.worktree.yml'), dump(configContent2))
+      writeFileSync(join(testDir, '.worktree.yml'), stringify(configContent1))
+      writeFileSync(join(testDir, '.git/.worktree.yml'), stringify(configContent2))
       
       const newConfigManager = new ConfigManager(testDir)
       expect(newConfigManager.worktreesDir).toBe('../priority')
@@ -64,7 +64,7 @@ describe('ConfigManager', () => {
         },
         worktrees_dir: '../',
       }
-      writeFileSync(join(testDir, '.worktree.yml'), dump(configContent))
+      writeFileSync(join(testDir, '.worktree.yml'), stringify(configContent))
       
       const newConfigManager = new ConfigManager(testDir)
       const {hooks} = newConfigManager
@@ -85,7 +85,7 @@ describe('ConfigManager', () => {
 
     it('returns the configured value', () => {
       const configContent = { main_branch_name: 'master' }
-      writeFileSync(join(testDir, '.worktree.yml'), dump(configContent))
+      writeFileSync(join(testDir, '.worktree.yml'), stringify(configContent))
       
       const newConfigManager = new ConfigManager(testDir)
       expect(newConfigManager.mainBranchName).toBe('master')
@@ -93,7 +93,7 @@ describe('ConfigManager', () => {
 
     it('returns custom branch name when configured', () => {
       const configContent = { main_branch_name: 'development' }
-      writeFileSync(join(testDir, '.worktree.yml'), dump(configContent))
+      writeFileSync(join(testDir, '.worktree.yml'), stringify(configContent))
       
       const newConfigManager = new ConfigManager(testDir)
       expect(newConfigManager.mainBranchName).toBe('development')
@@ -103,7 +103,7 @@ describe('ConfigManager', () => {
   describe('resolveWorktreePath', () => {
     beforeEach(() => {
       const configContent = { worktrees_dir: '../worktrees' }
-      writeFileSync(join(testDir, '.worktree.yml'), dump(configContent))
+      writeFileSync(join(testDir, '.worktree.yml'), stringify(configContent))
       configManager = new ConfigManager(testDir)
     })
 

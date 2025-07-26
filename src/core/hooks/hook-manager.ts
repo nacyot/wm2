@@ -1,7 +1,7 @@
 import { execa, Options as ExecaOptions } from 'execa'
-import { load } from 'js-yaml'
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { parse } from 'yaml'
 
 export type HookType = 'post_add' | 'post_remove' | 'pre_add' | 'pre_remove'
 
@@ -57,8 +57,8 @@ private readonly hooks: Record<string, unknown>
     } else if (Array.isArray(hookConfig)) {
       result = true
       // Sequential execution is required for hooks
-      // eslint-disable-next-line no-await-in-loop
       for (const command of hookConfig) {
+        // eslint-disable-next-line no-await-in-loop
         const commandResult = await this.executeCommand(command, context, hookType)
         if (!commandResult) {
           result = false
@@ -221,8 +221,8 @@ private readonly hooks: Record<string, unknown>
     if (commands && Array.isArray(commands)) {
       let allSucceeded = true
       // Sequential execution is required for hooks with stop_on_error
-      // eslint-disable-next-line no-await-in-loop
       for (const cmd of commands) {
+        // eslint-disable-next-line no-await-in-loop
         const result = await this.executeCommand(cmd, context, hookType, pwd)
         if (!result) {
           allSucceeded = false
@@ -261,7 +261,7 @@ private readonly hooks: Record<string, unknown>
 
     try {
       const content = readFileSync(hookFile, 'utf8')
-      const config = load(content) as Record<string, unknown> || {}
+      const config = parse(content) as Record<string, unknown> || {}
       
       // Support new structure: read configuration under hooks key
       if (config.hooks && typeof config.hooks === 'object') {

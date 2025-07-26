@@ -1,6 +1,6 @@
-import { load } from 'js-yaml'
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { parse } from 'yaml'
 
 export class ConfigManager {
   private static readonly DEFAULT_CONFIG_FILES = [
@@ -64,7 +64,7 @@ private readonly config: Record<string, unknown>
 
     try {
       const content = readFileSync(configFile, 'utf8')
-      return (load(content) as Record<string, unknown>) || {}
+      return (parse(content) as Record<string, unknown>) || {}
     } catch (error) {
       console.warn(`Warning: Failed to load config file ${configFile}: ${error instanceof Error ? error.message : String(error)}`)
       return {}
