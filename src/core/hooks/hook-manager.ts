@@ -157,22 +157,56 @@ private readonly hooks: Record<string, unknown>
       env: { ...process.env, ...env }, // Merge with process.env
       reject: false, // Don't throw on non-zero exit
       shell: true,
-      stdio: 'pipe', // Capture output for proper display
+      stdio: 'pipe', // Keep pipe to capture exit code and errors
     }
 
-    const result = await execa(command, [], options)
+    const childProcess = execa(command, [], options)
+
+    // Buffer for incomplete lines
+    let stdoutBuffer = ''
+    let stderrBuffer = ''
+
+    // Stream stdout line by line
+    if (childProcess.stdout) {
+      childProcess.stdout.on('data', (data) => {
+        stdoutBuffer += data.toString()
+        const lines = stdoutBuffer.split('\n')
+        // Keep the last incomplete line in the buffer
+        stdoutBuffer = lines.pop() || ''
+        // Output complete lines
+        for (const line of lines) {
+          console.log(line)
+        }
+      })
+    }
+
+    // Stream stderr line by line
+    if (childProcess.stderr) {
+      childProcess.stderr.on('data', (data) => {
+        stderrBuffer += data.toString()
+        const lines = stderrBuffer.split('\n')
+        // Keep the last incomplete line in the buffer
+        stderrBuffer = lines.pop() || ''
+        // Output complete lines
+        for (const line of lines) {
+          console.error(line)
+        }
+      })
+    }
+
+    const result = await childProcess
+
+    // Flush any remaining buffered content
+    if (stdoutBuffer) {
+      console.log(stdoutBuffer)
+    }
+    
+    if (stderrBuffer) {
+      console.error(stderrBuffer)
+    }
 
     const duration = Date.now() - startTime
     this.logDebug(`⏱️ Execution time: ${duration}ms`)
-
-    // Output stdout and stderr
-    if (result.stdout) {
-      console.log(result.stdout)
-    }
-
-    if (result.stderr) {
-      console.error(result.stderr)
-    }
 
     this.logDebug(`Exit code: ${result.exitCode}, Failed: ${result.failed}`)
     
