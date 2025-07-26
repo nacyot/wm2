@@ -25,8 +25,8 @@ export async function createTempDir(): Promise<string> {
 export async function createTestRepository(): Promise<TestRepository> {
   const repoPath = await createTempDir()
   
-  // Initialize git repository
-  await execa('git', ['init'], { cwd: repoPath })
+  // Initialize git repository with main branch
+  await execa('git', ['init', '-b', 'main'], { cwd: repoPath })
   await execa('git', ['config', 'user.email', 'test@example.com'], { cwd: repoPath })
   await execa('git', ['config', 'user.name', 'Test User'], { cwd: repoPath })
   
