@@ -55,7 +55,11 @@ npm run prepack
 
 # Commit version bump
 echo "Committing version bump..."
-git add package.json package-lock.json oclif.manifest.json
+git add package.json package-lock.json
+# Add oclif.manifest.json if it exists (it may be gitignored)
+if [ -f "oclif.manifest.json" ]; then
+    git add oclif.manifest.json 2>/dev/null || true
+fi
 git commit -m "chore: release v$NEW_VERSION"
 
 # Create git tag
