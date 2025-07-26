@@ -56,8 +56,8 @@ static override summary = 'Initialize worktree configuration file'
     const __filename = fileURLToPath(import.meta.url)
     const __dirname = dirname(__filename)
 
-    // First check in the project root (for development)
-    const projectRoot = join(__dirname, '../../..')
+    // Check in the project root (correct path for both dev and production)
+    const projectRoot = join(__dirname, '../..')
     const localExample = join(projectRoot, '.worktree.yml.example')
     if (existsSync(localExample)) {
       return localExample
