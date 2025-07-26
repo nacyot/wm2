@@ -8,16 +8,18 @@ import { Manager } from '../core/git/manager.js'
 import { HookManager } from '../core/hooks/hook-manager.js'
 
 export default class Add extends Command {
+  // Intentionally ordered: nameOrPath must come before branch for correct CLI argument parsing
   static override args = {
-    branch: Args.string({
-      description: 'Branch to use for the worktree',
-      name: 'BRANCH',
-      required: false,
-    }),
     nameOrPath: Args.string({
       description: 'Name or path for the worktree',
       name: 'NAME_OR_PATH',
       required: true,
+    }),
+    // eslint-disable-next-line perfectionist/sort-objects
+    branch: Args.string({
+      description: 'Branch to use for the worktree',
+      name: 'BRANCH',
+      required: false,
     }),
   }
 static override description = `

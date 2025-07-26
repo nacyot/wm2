@@ -3,15 +3,15 @@
     "add": {
       "aliases": [],
       "args": {
-        "branch": {
-          "description": "Branch to use for the worktree",
-          "name": "branch",
-          "required": false
-        },
         "nameOrPath": {
           "description": "Name or path for the worktree",
           "name": "nameOrPath",
           "required": true
+        },
+        "branch": {
+          "description": "Branch to use for the worktree",
+          "name": "branch",
+          "required": false
         }
       },
       "description": "\n    Creates a new git worktree at the specified location.\n\n    The NAME_OR_PATH can be:\n      - A simple name (e.g., 'feature'): Creates in configured worktrees_dir\n      - A relative path (e.g., '../projects/feature'): Creates at that path\n      - An absolute path: Creates at the exact location\n  ",
