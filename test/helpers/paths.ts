@@ -12,7 +12,7 @@ export function normalizePath(p: string): string {
   const real = existsSync(absolute)
     ? realpathSync.native(absolute)
     : absolute
-  return real.replace(/\\/g, '/')
+  return real.replaceAll('\\', '/')
 }
 
 /**
@@ -21,10 +21,11 @@ export function normalizePath(p: string): string {
 export function safeRealpath(p: string): string {
   try {
     return realpathSync.native(p)
-  } catch (error: any) {
-    if (error?.code === 'ENOENT') {
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
       return resolve(p)
     }
+    
     throw error
   }
 }

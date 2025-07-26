@@ -43,6 +43,7 @@ export function getWriteFileCommand(filename: string, content: string): string {
     // Windows: Use echo with output redirection
     return `echo ${content} > ${filename}`
   }
+  
   // Unix: Use echo with output redirection
   return `echo "${content}" > ${filename}`
 }

@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { stringify } from 'yaml'
 
 import { HookManager } from '../../../src/core/hooks/hook-manager.js'
-import { normalizePath, pathsEqual, getWritePwdCommand, getEchoCommand, getExitCommand } from '../../helpers/index.js'
+import { getEchoCommand, getExitCommand, getWritePwdCommand, pathsEqual } from '../../helpers/index.js'
 
 describe('HookManager', () => {
   let tempDir: string
