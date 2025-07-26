@@ -29,6 +29,18 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
     exit 1
 fi
 
+# Run tests first - fail fast if tests don't pass
+echo "Running tests..."
+npm test
+if [ $? -ne 0 ]; then
+    echo "Error: Tests failed. Please fix the tests before releasing."
+    exit 1
+fi
+
+# Build the package
+echo "Building package..."
+npm run build
+
 # Read current version from package.json
 CURRENT_VERSION=$(node -p "require('./package.json').version")
 echo "Current version: $CURRENT_VERSION"
@@ -36,14 +48,6 @@ echo "Current version: $CURRENT_VERSION"
 # Calculate new version using npm version (dry-run to preview)
 NEW_VERSION=$(npm version $VERSION_TYPE --no-git-tag-version --dry-run 2>/dev/null | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
 echo "New version will be: $NEW_VERSION"
-
-# Build the package
-echo "Building package..."
-npm run build
-
-# Run tests
-echo "Running tests..."
-npm test
 
 # Update version in package.json and package-lock.json
 echo "Updating version..."
