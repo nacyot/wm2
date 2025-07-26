@@ -34,7 +34,7 @@ CURRENT_VERSION=$(node -p "require('./package.json').version")
 echo "Current version: $CURRENT_VERSION"
 
 # Calculate new version using npm version (dry-run to preview)
-NEW_VERSION=$(npm version $VERSION_TYPE --no-git-tag-version --dry-run 2>/dev/null | grep -v '^npm')
+NEW_VERSION=$(npm version $VERSION_TYPE --no-git-tag-version --dry-run 2>/dev/null | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
 echo "New version will be: $NEW_VERSION"
 
 # Build the package
@@ -46,8 +46,12 @@ echo "Running tests..."
 npm test
 
 # Update version in package.json and package-lock.json
-echo "Updating version to $NEW_VERSION..."
+echo "Updating version..."
 npm version $VERSION_TYPE --no-git-tag-version
+
+# Read the actual new version from package.json
+NEW_VERSION=$(node -p "require('./package.json').version")
+echo "Version updated to: $NEW_VERSION"
 
 # Ensure oclif manifest is updated
 echo "Updating oclif manifest..."
