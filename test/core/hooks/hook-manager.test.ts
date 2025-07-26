@@ -1,11 +1,12 @@
 /* eslint-disable camelcase */
-import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { stringify } from 'yaml'
 
 import { HookManager } from '../../../src/core/hooks/hook-manager.js'
+import { normalizePath, pathsEqual, getWritePwdCommand, getEchoCommand, getExitCommand } from '../../helpers/index.js'
 
 describe('HookManager', () => {
   let tempDir: string
@@ -45,7 +46,7 @@ describe('HookManager', () => {
       describe('with string command', () => {
         beforeEach(() => {
           writeFileSync(getHookFile(), stringify({
-            pre_add: "echo 'Pre-add hook executed'"
+            pre_add: getEchoCommand('Pre-add hook executed')
           }))
         })
 
@@ -62,7 +63,7 @@ describe('HookManager', () => {
       describe('with array of commands', () => {
         beforeEach(() => {
           writeFileSync(getHookFile(), stringify({
-            pre_add: ["echo 'First command'", "echo 'Second command'"]
+            pre_add: [getEchoCommand('First command'), getEchoCommand('Second command')]
           }))
         })
 
@@ -75,7 +76,7 @@ describe('HookManager', () => {
         beforeEach(() => {
           writeFileSync(getHookFile(), stringify({
             pre_add: {
-              command: "echo 'Hook with config'",
+              command: getEchoCommand('Hook with config'),
               stop_on_error: true
             }
           }))
@@ -89,7 +90,7 @@ describe('HookManager', () => {
       describe('when command fails', () => {
         beforeEach(() => {
           writeFileSync(getHookFile(), stringify({
-            pre_add: 'exit 1'
+            pre_add: getExitCommand(1)
           }))
         })
 
@@ -136,7 +137,7 @@ describe('HookManager', () => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
           hooks: {
             pre_add: {
-              commands: ["echo 'Command 1'", "echo 'Command 2'"]
+              commands: [getEchoCommand('Command 1'), getEchoCommand('Command 2')]
             }
           }
         }))
@@ -157,7 +158,7 @@ describe('HookManager', () => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
           hooks: {
             pre_add: {
-              commands: ['pwd > pwd.txt'],
+              commands: [getWritePwdCommand('pwd.txt')],
               pwd: testWorkDir
             }
           }
@@ -171,7 +172,7 @@ describe('HookManager', () => {
         const pwdFile = join(testWorkDir, 'pwd.txt')
         expect(existsSync(pwdFile)).toBe(true)
         const writtenPath = readFileSync(pwdFile, 'utf8').trim()
-        expect(realpathSync(writtenPath)).toBe(realpathSync(testWorkDir))
+        expect(pathsEqual(writtenPath, testWorkDir)).toBe(true)
       })
     })
 
@@ -184,7 +185,7 @@ describe('HookManager', () => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
           hooks: {
             post_add: {
-              commands: ['pwd > pwd.txt'],
+              commands: [getWritePwdCommand('pwd.txt')],
               pwd: '$WORKTREE_ABSOLUTE_PATH'
             }
           }
@@ -199,7 +200,7 @@ describe('HookManager', () => {
         const pwdFile = join(testWorktree, 'pwd.txt')
         expect(existsSync(pwdFile)).toBe(true)
         const writtenPath = readFileSync(pwdFile, 'utf8').trim()
-        expect(realpathSync(writtenPath)).toBe(realpathSync(testWorktree))
+        expect(pathsEqual(writtenPath, testWorktree)).toBe(true)
       })
     })
   })
@@ -208,7 +209,7 @@ describe('HookManager', () => {
     beforeEach(() => {
       writeFileSync(join(tempDir, '.worktree.yml'), stringify({
         post_add: null,
-        pre_add: "echo 'test'"
+        pre_add: getEchoCommand('test')
       }))
     })
 
@@ -237,9 +238,9 @@ describe('HookManager', () => {
     describe('when hook file exists', () => {
       beforeEach(() => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
-          invalid_hook: "echo 'invalid'",
-          post_add: "echo 'post-add'",
-          pre_add: "echo 'pre-add'",
+          invalid_hook: getEchoCommand('invalid'),
+          post_add: getEchoCommand('post-add'),
+          pre_add: getEchoCommand('pre-add'),
           pre_remove: null
         }))
       })
@@ -248,8 +249,8 @@ describe('HookManager', () => {
         const newHookManager = new HookManager(tempDir)
         const hooks = newHookManager.listHooks()
         expect(Object.keys(hooks)).toHaveLength(2)
-        expect(hooks.pre_add).toBe("echo 'pre-add'")
-        expect(hooks.post_add).toBe("echo 'post-add'")
+        expect(hooks.pre_add).toBe(getEchoCommand('pre-add'))
+        expect(hooks.post_add).toBe(getEchoCommand('post-add'))
       })
     })
 
@@ -278,7 +279,7 @@ describe('HookManager', () => {
     describe('with .worktree.yml in root', () => {
       beforeEach(() => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
-          hooks: { pre_add: { commands: ["echo 'root hook'"] } }
+          hooks: { pre_add: { commands: [getEchoCommand('root hook')] } }
         }))
       })
 
@@ -293,7 +294,7 @@ describe('HookManager', () => {
         const gitDir = join(tempDir, '.git')
         mkdirSync(gitDir)
         writeFileSync(join(gitDir, '.worktree.yml'), stringify({
-          hooks: { pre_add: { commands: ["echo 'git hook'"] } }
+          hooks: { pre_add: { commands: [getEchoCommand('git hook')] } }
         }))
       })
 
@@ -306,13 +307,13 @@ describe('HookManager', () => {
     describe('with both hook files present', () => {
       beforeEach(() => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
-          hooks: { pre_add: { commands: ["echo 'root hook'"] } }
+          hooks: { pre_add: { commands: [getEchoCommand('root hook')] } }
         }))
         
         const gitDir = join(tempDir, '.git')
         mkdirSync(gitDir)
         writeFileSync(join(gitDir, '.worktree.yml'), stringify({
-          hooks: { pre_remove: { commands: ["echo 'git hook'"] } }
+          hooks: { pre_remove: { commands: [getEchoCommand('git hook')] } }
         }))
       })
 
@@ -331,8 +332,8 @@ describe('HookManager', () => {
           hooks: {
             pre_add: {
               commands: [
-                'exit 1',
-                "echo 'This should still execute'"
+                getExitCommand(1),
+                getEchoCommand('This should still execute')
               ],
               stop_on_error: false
             }
@@ -354,8 +355,8 @@ describe('HookManager', () => {
           hooks: {
             pre_add: {
               commands: [
-                'exit 1',
-                "echo 'This should NOT execute'"
+                getExitCommand(1),
+                getEchoCommand('This should NOT execute')
               ]
             }
           }
@@ -424,7 +425,7 @@ describe('HookManager', () => {
     describe('with single string command at top level', () => {
       beforeEach(() => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
-          pre_add: "echo 'Legacy single command'"
+          pre_add: getEchoCommand('Legacy single command')
         }))
       })
 
@@ -438,8 +439,8 @@ describe('HookManager', () => {
       beforeEach(() => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
           post_add: [
-            "echo 'Legacy command 1'",
-            "echo 'Legacy command 2'"
+            getEchoCommand('Legacy command 1'),
+            getEchoCommand('Legacy command 2')
           ]
         }))
       })
@@ -454,7 +455,7 @@ describe('HookManager', () => {
       beforeEach(() => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
           pre_remove: {
-            command: "echo 'Legacy hash command'",
+            command: getEchoCommand('Legacy hash command'),
             stop_on_error: false
           }
         }))
@@ -480,7 +481,7 @@ describe('HookManager', () => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
           hooks: {
             post_add: {
-              commands: ['pwd > current_dir.txt']
+              commands: [getWritePwdCommand('current_dir.txt')]
             }
           }
         }))
@@ -494,7 +495,7 @@ describe('HookManager', () => {
         const pwdFile = join(worktreePath, 'current_dir.txt')
         expect(existsSync(pwdFile)).toBe(true)
         const writtenPath = readFileSync(pwdFile, 'utf8').trim()
-        expect(realpathSync(writtenPath)).toBe(realpathSync(worktreePath))
+        expect(pathsEqual(writtenPath, worktreePath)).toBe(true)
       })
     })
 
@@ -503,7 +504,7 @@ describe('HookManager', () => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
           hooks: {
             pre_remove: {
-              commands: ['pwd > current_dir.txt']
+              commands: [getWritePwdCommand('current_dir.txt')]
             }
           }
         }))
@@ -517,7 +518,7 @@ describe('HookManager', () => {
         const pwdFile = join(worktreePath, 'current_dir.txt')
         expect(existsSync(pwdFile)).toBe(true)
         const writtenPath = readFileSync(pwdFile, 'utf8').trim()
-        expect(realpathSync(writtenPath)).toBe(realpathSync(worktreePath))
+        expect(pathsEqual(writtenPath, worktreePath)).toBe(true)
       })
     })
 
@@ -526,7 +527,7 @@ describe('HookManager', () => {
         writeFileSync(join(tempDir, '.worktree.yml'), stringify({
           hooks: {
             pre_add: {
-              commands: ['pwd > current_dir.txt']
+              commands: [getWritePwdCommand('current_dir.txt')]
             }
           }
         }))
@@ -540,7 +541,7 @@ describe('HookManager', () => {
         const pwdFile = join(tempDir, 'current_dir.txt')
         expect(existsSync(pwdFile)).toBe(true)
         const writtenPath = readFileSync(pwdFile, 'utf8').trim()
-        expect(realpathSync(writtenPath)).toBe(realpathSync(tempDir))
+        expect(pathsEqual(writtenPath, tempDir)).toBe(true)
       })
     })
   })
@@ -551,7 +552,7 @@ describe('HookManager', () => {
       const verboseHookManager = new HookManager(tempDir, { verbose: true })
       
       writeFileSync(join(tempDir, '.worktree.yml'), stringify({
-        pre_add: "echo 'test'"
+        pre_add: getEchoCommand('test')
       }))
       
       await verboseHookManager.executeHook('pre_add')
@@ -564,7 +565,7 @@ describe('HookManager', () => {
       const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       
       writeFileSync(join(tempDir, '.worktree.yml'), stringify({
-        pre_add: "echo 'test'"
+        pre_add: getEchoCommand('test')
       }))
       
       await hookManager.executeHook('pre_add')

@@ -1,19 +1,10 @@
-import { existsSync, realpathSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { GitError, Manager } from '../../../src/core/git/manager.js'
 import { Worktree } from '../../../src/models/worktree.js'
-import { createTestRepository } from '../../helpers/index.js'
-
-// Helper to normalize paths for comparison (handles /private/var vs /var on macOS)
-function normalizePath(path: string): string {
-  try {
-    return realpathSync(path)
-  } catch {
-    return resolve(path)
-  }
-}
+import { createTestRepository, normalizePath } from '../../helpers/index.js'
 
 describe('Manager', () => {
   let testRepo: { cleanup: () => Promise<void>; path: string; }

@@ -184,10 +184,9 @@ export class Manager {
 
   private validateInput(input: string, type: 'branch' | 'path'): void {
     // Prevent command injection by checking for dangerous characters
-    // Allow backslash for Windows paths
-    const dangerousChars = type === 'path' && process.platform === 'win32' 
-      ? /[;&|`$<>]/ 
-      : /[;&|`$<>\\]/
+    const dangerousChars = type === 'path' 
+      ? /[;&|`$<>]/     // allow \ for paths (Windows needs it)
+      : /[;&|`$<>\\]/   // block \ in branch names
     if (dangerousChars.test(input)) {
       throw new GitError(`Invalid ${type}: contains potentially dangerous characters`)
     }

@@ -1,4 +1,7 @@
 import { execa } from 'execa'
+
+export * from './paths.js'
+export * from './shell-commands.js'
 import { randomBytes } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
