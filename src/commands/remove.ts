@@ -125,7 +125,7 @@ static override summary = 'Remove an existing worktree'
       // Remove worktree
       await manager.remove(path, { force: flags.force })
 
-      this.log(`Worktree removed: ${targetWorktree.path}`)
+      this.log(`Removed: ${targetWorktree.path}`)
 
       // Execute post-remove hook
       if (!flags['no-hooks']) {
@@ -153,7 +153,7 @@ static override summary = 'Remove an existing worktree'
           try {
             // Retry with force option
             await manager.remove(path, { force: true })
-            this.log(`Worktree removed: ${targetWorktree.path}`)
+            this.log(`Removed: ${targetWorktree.path}`)
 
             // Execute post-remove hook with success
             if (!flags['no-hooks']) {
@@ -264,12 +264,7 @@ static override summary = 'Remove an existing worktree'
 
     // Show confirmation prompt
     if (this.isInteractiveModeAvailable()) {
-      this.log('The following worktrees will be removed:')
-      for (const worktree of removableWorktrees) {
-        this.log(`  - ${worktree.path} (${worktree.branch || 'detached'})`)
-      }
-
-      this.log('')
+      this.log(`Removing ${removableWorktrees.length} worktrees...`)
 
       const shouldRemove = await confirm({
         default: false,
@@ -296,7 +291,6 @@ static override summary = 'Remove an existing worktree'
     const forceRemovableWorktrees: Worktree[] = []
 
     // Sequential execution is required for removing worktrees
-    // eslint-disable-next-line no-await-in-loop
     for (const worktree of removableWorktrees) {
       this.log(`\nRemoving worktree: ${worktree.path}`)
 
@@ -308,6 +302,7 @@ static override summary = 'Remove an existing worktree'
       }
 
       if (!flags['no-hooks']) {
+        // eslint-disable-next-line no-await-in-loop
         const hookResult = await hookManager.executeHook('pre_remove', context)
         if (!hookResult) {
           this.log('  Error: pre_remove hook failed. Skipping this worktree.')
@@ -318,6 +313,7 @@ static override summary = 'Remove an existing worktree'
 
       try {
         // Remove worktree
+        // eslint-disable-next-line no-await-in-loop
         await manager.remove(worktree.path, { force: flags.force })
 
         this.log(`  Worktree removed: ${worktree.path}`)
@@ -329,6 +325,7 @@ static override summary = 'Remove an existing worktree'
             ...context,
             success: true,
           }
+          // eslint-disable-next-line no-await-in-loop
           await hookManager.executeHook('post_remove', postContext)
         }
       } catch (error) {
@@ -348,6 +345,7 @@ static override summary = 'Remove an existing worktree'
             error: errorMessage,
             success: false,
           }
+          // eslint-disable-next-line no-await-in-loop
           await hookManager.executeHook('post_remove', errorContext)
         }
       }
@@ -375,12 +373,12 @@ static override summary = 'Remove an existing worktree'
         this.log('\nForce removing worktrees with uncommitted changes...')
 
         // Sequential execution is required for force removing worktrees
-        // eslint-disable-next-line no-await-in-loop
         for (const worktree of forceRemovableWorktrees) {
           this.log(`\nRemoving worktree: ${worktree.path}`)
 
           try {
             // Remove with force
+            // eslint-disable-next-line no-await-in-loop
             await manager.remove(worktree.path, { force: true })
 
             this.log(`  Worktree removed: ${worktree.path}`)
@@ -395,6 +393,7 @@ static override summary = 'Remove an existing worktree'
                 path: worktree.path,
                 success: true,
               }
+              // eslint-disable-next-line no-await-in-loop
               await hookManager.executeHook('post_remove', context)
             }
           } catch (error) {

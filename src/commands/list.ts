@@ -1,7 +1,7 @@
 import { Command } from '@oclif/core'
 import { execa } from 'execa'
 import { existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 
 import { Manager } from '../core/git/manager.js'
 
@@ -25,9 +25,7 @@ static override summary = 'List all worktrees'
     // Show main repository path if running from a worktree
     const isMain = await this.isMainRepository()
     if (!isMain) {
-      this.log(`Running from worktree. Main repository: ${mainRepoPath}`)
-      this.log('To enter the main repository, run:')
-      this.log(`  cd ${mainRepoPath}`)
+      this.log(`Main: ${mainRepoPath}`)
       this.log('')
     }
 
@@ -37,8 +35,26 @@ static override summary = 'List all worktrees'
     if (worktrees.length === 0) {
       this.log('No worktrees found.')
     } else {
-      for (const worktree of worktrees) {
-        this.log(worktree.toString())
+      const cwd = process.cwd()
+      
+      // Calculate column widths for alignment
+      let maxPathLength = 0
+      const entries = worktrees.map(worktree => {
+        const relativePath = relative(cwd, worktree.path)
+        const displayPath = relativePath.startsWith('..') ? relativePath : `./${relativePath}`
+        const shortHash = worktree.head.slice(0, 7)
+        const branchDisplay = worktree.branch || 'HEAD (detached)'
+        
+        maxPathLength = Math.max(maxPathLength, displayPath.length)
+        
+        return { branchDisplay, displayPath, isCurrent: cwd === worktree.path, shortHash }
+      })
+      
+      // Display aligned output
+      for (const entry of entries) {
+        const paddedPath = entry.displayPath.padEnd(maxPathLength + 2)
+        const prefix = entry.isCurrent ? '* ' : '  '
+        this.log(`${prefix}${paddedPath}${entry.shortHash}  [${entry.branchDisplay}]`)
       }
     }
   }

@@ -134,9 +134,8 @@ static override summary = 'Create a new worktree'
         result = await manager.add(path, undefined, { force: flags.force })
       }
 
-      this.log(`Worktree created: ${result.path} (${result.branch || 'detached'})`)
-      this.log('\nTo enter the worktree, run:')
-      this.log(`  cd ${result.path}`)
+      this.log(`Created: ${result.path} [${result.branch || 'detached'}]`)
+      this.log(`Run: cd ${result.path}`)
 
       // Execute post-add hook
       if (!flags['no-hooks']) {

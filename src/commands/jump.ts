@@ -3,6 +3,7 @@ import { Args, Command } from '@oclif/core'
 import { execa } from 'execa'
 import { existsSync, statSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
+import * as readline from 'node:readline'
 
 import { Manager } from '../core/git/manager.js'
 import { Worktree } from '../models/worktree.js'
@@ -32,7 +33,7 @@ static override summary = 'Navigate to a worktree directory'
 
     const mainRepoPath = await this.findMainRepositoryPath()
     if (!mainRepoPath) {
-      this.warn('Error: Not in a Git repository.')
+      console.error('Not in a Git repository')
       this.exit(1)
     }
 
@@ -40,7 +41,7 @@ static override summary = 'Navigate to a worktree directory'
     const worktrees = await manager.list()
 
     if (worktrees.length === 0) {
-      this.warn('Error: No worktrees found.')
+      console.error('No worktrees found')
       this.exit(1)
     }
 
@@ -56,11 +57,7 @@ static override summary = 'Navigate to a worktree directory'
       )
 
       if (!target) {
-        this.warn(`Error: Worktree '${args.worktree}' not found.`)
-        this.warn('\nAvailable worktrees:')
-        for (const w of worktrees) {
-          this.warn(`  - ${basename(w.path)} (${w.branch || 'detached'})`)
-        }
+        console.error(`Worktree '${args.worktree}' not found`)
 
         this.exit(1)
       }
@@ -108,14 +105,21 @@ static override summary = 'Navigate to a worktree directory'
 
   private async selectWorktreeInteractive(worktrees: Worktree[]): Promise<Worktree> {
     // Check if running in interactive mode
-    if (!process.stdin.isTTY || !process.stderr.isTTY) {
-      this.warn('Error: Interactive mode requires a TTY. Please specify a worktree name.')
+    // Only check stdin for TTY since stdout might be piped for cd $(wm2 jump)
+    if (!process.stdin.isTTY) {
+      console.error('Interactive mode requires TTY. Specify a worktree name.')
       this.exit(1)
     }
 
     // Get current directory to highlight current worktree
     const currentPath = process.cwd()
 
+    // If stdout is piped (like in cd $(wm2 jump)), use custom implementation
+    if (!process.stdout.isTTY) {
+      return this.selectWorktreeWithStderr(worktrees, currentPath)
+    }
+
+    // Normal interactive mode with inquirer
     // Build choices for prompt
     const choices = worktrees.map(worktree => {
       const isCurrent = resolve(currentPath).startsWith(resolve(worktree.path))
@@ -139,8 +143,43 @@ static override summary = 'Navigate to a worktree directory'
       })
     } catch {
       // User cancelled
-      this.warn('\nCancelled.')
+      console.error('\nCancelled.')
       this.exit(0)
     }
+  }
+
+  private async selectWorktreeWithStderr(worktrees: Worktree[], currentPath: string): Promise<Worktree> {
+    // Create readline interface using stderr for output
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stderr,
+      terminal: true,
+    })
+
+    // Display worktrees
+    console.error('\nSelect a worktree:')
+    const indexedWorktrees = worktrees.map((worktree, index) => {
+      const isCurrent = resolve(currentPath).startsWith(resolve(worktree.path))
+      const branchInfo = worktree.branch || 'detached'
+      const name = basename(worktree.path)
+      let label = `${index + 1}) ${name} - ${branchInfo}`
+      if (isCurrent) label += ' (current)'
+      console.error(label)
+      return worktree
+    })
+
+    return new Promise((resolve) => {
+      rl.question('\nEnter number: ', (answer) => {
+        rl.close()
+        
+        const index = Number.parseInt(answer, 10) - 1
+        if (index >= 0 && index < indexedWorktrees.length) {
+          resolve(indexedWorktrees[index])
+        } else {
+          console.error('Invalid selection.')
+          this.exit(1)
+        }
+      })
+    })
   }
 }

@@ -61,7 +61,7 @@ static override summary = 'Reset current worktree branch to origin/main'
       }
     }
 
-    this.log(`Resetting branch '${currentBranch}' to origin/${mainBranchName}...`)
+    this.log(`Resetting '${currentBranch}' to origin/${mainBranchName}...`)
 
     // Fetch origin/main
     try {
@@ -74,7 +74,7 @@ static override summary = 'Reset current worktree branch to origin/main'
     // Always use --hard reset to ensure clean working directory
     try {
       await execa('git', ['reset', '--hard', `origin/${mainBranchName}`], { stdio: 'inherit' })
-      this.log(`Successfully reset '${currentBranch}' to origin/${mainBranchName}`)
+      this.log(`Reset complete: ${currentBranch} → origin/${mainBranchName}`)
     } catch (error) {
       this.error(`Failed to reset: ${error instanceof Error ? error.message : String(error)}`)
     }
