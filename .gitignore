@@ -6,8 +6,8 @@
 /tmp
 /node_modules
 oclif.manifest.json
-
-
+/.notes
+/.vscode
 
 yarn.lock
 pnpm-lock.yaml
