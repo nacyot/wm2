@@ -2,13 +2,30 @@
 
 set -e
 
+# Check if using changesets
+if [ -f ".changeset/config.json" ]; then
+    echo "ℹ️  This project uses changesets for releases."
+    echo ""
+    echo "To create a new release:"
+    echo "  1. Create a changeset: npm run changeset"
+    echo "  2. Push to main branch"
+    echo "  3. Merge the automated PR created by changesets"
+    echo ""
+    echo "For manual release (not recommended), use: $0 --manual [major|minor|patch]"
+    
+    if [ "$1" != "--manual" ]; then
+        exit 0
+    fi
+    shift
+fi
+
 # Set default version increment type if not provided
 VERSION_TYPE="${1:-patch}"
 
 # Validate version increment type
 if [[ ! "$VERSION_TYPE" =~ ^(major|minor|patch)$ ]]; then
     echo "Error: Version type must be 'major', 'minor', or 'patch'"
-    echo "Usage: $0 [major|minor|patch]"
+    echo "Usage: $0 [--manual] [major|minor|patch]"
     exit 1
 fi
 
@@ -114,3 +131,6 @@ echo ""
 echo "Next steps:"
 echo "- Update the changelog if you have one"
 echo "- Create a GitHub release at: https://github.com/nacyot/wm2/releases/new"
+echo ""
+echo "⚠️  Note: This was a manual release. Consider using changesets for automated releases:"
+echo "  npm run changeset"
