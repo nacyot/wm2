@@ -8,6 +8,7 @@
 /.notes
 /.vscode
 .worktree.yml
+.env.local
 
 yarn.lock
 pnpm-lock.yaml

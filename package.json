@@ -72,5 +72,8 @@
     "changeset:publish": "npm run build && changeset publish",
     "release": "npm run build && npm run test && changeset publish"
   },
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "overrides": {
+    "debug": "4.4.1"
+  }
 }
